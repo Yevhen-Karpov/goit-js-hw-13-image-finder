@@ -3,10 +3,14 @@ import ApiService from "./apiService";
 import templateCard from "./template/templateCard.hbs";
 import "./styles.css";
 import "../images/icon-close.svg";
+import "@pnotify/core/dist/BrightTheme.css";
+
+const apiService = new ApiService();
+const { error } = require("@pnotify/core");
 
 refs.searchForm.addEventListener("submit", onSearch);
 refs.loadBtn.addEventListener("click", onLoadMore);
-const apiService = new ApiService();
+refs.closeModalBtn.addEventListener("click", onCloseModal);
 
 function onSearch(e) {
   e.preventDefault();
@@ -17,19 +21,19 @@ function onSearch(e) {
     .fetchArticles()
     .then((hits) => {
       cardMarkup(hits);
-
+      refs.loadBtn.classList.remove("disabled");
       refs.cardContainer.addEventListener("click", onOpenModal);
-      function onOpenModal(e) {
-        const condition = e.target.nodeName === "IMG";
-
-        if (condition) {
-          window.addEventListener("keydown", onEscKeyPress);
-          refs.openModalBtn.classList.add("is-open");
-          refs.modalImage.src = e.target.dataset.src;
-        }
-      }
     })
     .catch((error) => console.log(error));
+}
+function onOpenModal(e) {
+  const condition = e.target.nodeName === "IMG";
+
+  if (condition) {
+    window.addEventListener("keydown", onEscKeyPress);
+    refs.openModalBtn.classList.add("is-open");
+    refs.modalImage.src = e.target.dataset.src;
+  }
 }
 function onLoadMore() {
   apiService.fetchArticles().then((hits) => {
@@ -44,15 +48,23 @@ function onLoadMore() {
     );
   });
 }
-function cardMarkup({ hits }) {
-  refs.cardContainer.insertAdjacentHTML("beforeend", templateCard(hits));
+
+function cardMarkup({ hits, totalHits }) {
+  // refs.cardContainer.insertAdjacentHTML("beforeend", templateCard(hits));
+  if (totalHits == 0) {
+    console.log("hits");
+    throw error({
+      text: "No images has been found. Please enter a more specific query!",
+    });
+  } else {
+    refs.cardContainer.insertAdjacentHTML("beforeend", templateCard(hits));
+  }
 }
 
 function clearContainer() {
   refs.cardContainer.innerHTML = "";
+  refs.loadBtn.classList.add("disabled");
 }
-
-refs.closeModalBtn.addEventListener("click", onCloseModal);
 
 function onCloseModal(evt) {
   window.removeEventListener("keydown", onEscKeyPress);
