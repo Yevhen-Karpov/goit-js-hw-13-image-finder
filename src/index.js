@@ -38,26 +38,24 @@ function onOpenModal(e) {
 function onLoadMore() {
   apiService.fetchArticles().then((hits) => {
     cardMarkup(hits);
-    setTimeout(
-      () =>
-        refs.cardContainer.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-        }),
-      1000
-    );
   });
 }
 
 function cardMarkup({ hits, totalHits }) {
-  // refs.cardContainer.insertAdjacentHTML("beforeend", templateCard(hits));
-  if (totalHits == 0) {
-    console.log("hits");
+  if (totalHits === 0) {
     throw error({
       text: "No images has been found. Please enter a more specific query!",
     });
   } else {
     refs.cardContainer.insertAdjacentHTML("beforeend", templateCard(hits));
+    setTimeout(
+      () =>
+        refs.loadBtn.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        }),
+      1000
+    );
   }
 }
 
